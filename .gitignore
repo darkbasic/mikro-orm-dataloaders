@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+/coverage
+/temp
+/tests/**/temp
+/tests/generated-entities
+/.idea
+/.vscode
+/yarn-error.log
+/.coveralls.yml
+!.gitkeep
+*.tsbuildinfo
+.DS_Store
+COVERAGE_RESULT
+.npmrc
+.yarn/*
+!.yarn/patches

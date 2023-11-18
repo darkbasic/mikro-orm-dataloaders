@@ -1,0 +1,28 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "version": "1.0.0",
+  "description": "Additional dataloaders for MikroORM",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "repository": "https://github.com/darkbasic/mikro-orm-dataloaders.git",
+  "author": "Niccolò Belli <niccolo.belli@linuxsystems.it>",
+  "license": "MIT",
+  "packageManager": "yarn@4.0.2",
+  "devDependencies": {
+    "@types/eslint": "^8.44.7",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-standard-with-typescript": "^40.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.3.1",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.2.2"
+  }
+}
