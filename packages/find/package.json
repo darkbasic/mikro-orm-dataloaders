@@ -30,9 +30,9 @@
     "node": ">= 18.12.0"
   },
   "scripts": {
-    "build": "yarn clean && yarn compile",
+    "build": "yarn run compile",
     "clean": "yarn run -T rimraf ./dist",
-    "compile": "yarn run -T tsc",
+    "compile": "yarn run clean && yarn run -T tsc",
     "test": "yarn run -T jest"
   },
   "jest": {

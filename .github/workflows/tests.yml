@@ -1,0 +1,30 @@
+name: Node CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test packages
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup env
+        uses: darkbasic/shared-config/setup@main
+        with:
+          nodeVersion: 18
+
+      - name: Compile packages
+        run: yarn run compile
+
+      - name: Run tests
+        run: yarn run test
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3

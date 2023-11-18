@@ -6,7 +6,8 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "yarn workspace mikro-orm-find-dataloader run build",
+    "build": "yarn run compile",
+    "compile": "yarn workspace mikro-orm-find-dataloader run build",
     "test": "yarn workspace mikro-orm-find-dataloader run test",
     "version": "yarn changeset version && yarn install --immutable",
     "release": "yarn run compile && yarn changeset publish"
