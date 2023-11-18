@@ -13,7 +13,7 @@ import { type FilterQueryDataloader } from "./EntityDataLoader";
 import { type PartialBy } from "./types";
 
 export function groupPrimaryKeysByEntity<T extends AnyEntity<T>>(
-  refs: ReadonlyArray<Reference<T>>,
+  refs: Array<Reference<T>>,
 ): Map<string, Set<Primary<T>>> {
   const map = new Map<string, Set<Primary<T>>>();
   for (const ref of refs) {
@@ -29,7 +29,7 @@ export function groupPrimaryKeysByEntity<T extends AnyEntity<T>>(
 }
 
 export function groupInversedOrMappedKeysByEntity<T extends AnyEntity<T>>(
-  collections: ReadonlyArray<Collection<T, AnyEntity>>,
+  collections: Array<Collection<T, AnyEntity>>,
 ): Map<string, Map<string, Set<Primary<T>>>> {
   const entitiesMap = new Map<string, Map<string, Set<Primary<T>>>>();
   for (const col of collections) {
@@ -219,7 +219,7 @@ export interface DataloaderFind<K extends object, Hint extends string = never, F
 }
 
 export function groupFindQueries(
-  dataloaderFinds: ReadonlyArray<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>,
+  dataloaderFinds: Array<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>,
 ): Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]> {
   const queriesMap = new Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]>();
   for (const dataloaderFind of dataloaderFinds) {
@@ -242,8 +242,8 @@ export function groupFindQueries(
 }
 
 export function assertHasNewFilterAndMapKey(
-  dataloaderFinds: ReadonlyArray<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>,
-): asserts dataloaderFinds is ReadonlyArray<DataloaderFind<any, any>> {
+  dataloaderFinds: Array<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>,
+): asserts dataloaderFinds is Array<DataloaderFind<any, any>> {
   /* if (dataloaderFinds.some((el) => el.key == null || el.newFilter == null)) {
     throw new Error("Missing key or newFilter");
   } */
