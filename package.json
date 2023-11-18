@@ -2,8 +2,12 @@
   "name": "root",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
+  "scripts": {
+    "build": "yarn workspace mikro-orm-find-dataloader run build"
+  },
   "version": "1.0.0",
   "description": "Additional dataloaders for MikroORM",
   "main": "dist/index.js",
@@ -14,6 +18,7 @@
   "packageManager": "yarn@4.0.2",
   "devDependencies": {
     "@types/eslint": "^8.44.7",
+    "@types/node": "^20.9.1",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
@@ -22,7 +27,10 @@
     "eslint-plugin-n": "^16.3.1",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }
 }

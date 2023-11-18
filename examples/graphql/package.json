@@ -1,0 +1,30 @@
+{
+  "name": "graphql-example",
+  "private": true,
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm-config.ts",
+      "./lib/mikro-orm-config.js"
+    ]
+  },
+  "scripts": {
+    "start": "NODE_ENV=development yarn run -T nodemon -w src -x ts-node src/index.ts",
+    "test": "yarn run build"
+  },
+  "dependencies": {
+    "@mikro-orm/cli": "6.0.0-dev.187",
+    "@mikro-orm/core": "6.0.0-dev.187",
+    "@mikro-orm/entity-generator": "6.0.0-dev.187",
+    "@mikro-orm/knex": "6.0.0-dev.187",
+    "@mikro-orm/migrations": "6.0.0-dev.187",
+    "@mikro-orm/reflection": "6.0.0-dev.187",
+    "@mikro-orm/sqlite": "6.0.0-dev.187",
+    "graphql": "16.8.1",
+    "graphql-yoga": "5.0.0",
+    "tslib": "2.6.2"
+  }
+}
