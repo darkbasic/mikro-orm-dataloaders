@@ -68,7 +68,7 @@ void (async () => {
           // return await author.books.load();
           // return await author.books.load({ dataloader: true });
           // return await em.find(Book, { author: author.id });
-          return entityDataLoader.find(Book, { author: author.id });
+          return await entityDataLoader.find(Book, { author: author.id });
         },
       },
     },

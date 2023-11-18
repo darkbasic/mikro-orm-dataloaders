@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "yarn workspace mikro-orm-find-dataloader run build",
+    "test": "yarn workspace mikro-orm-find-dataloader run test",
     "version": "yarn changeset version && yarn install --immutable",
     "release": "yarn run compile && yarn changeset publish"
   },
@@ -22,18 +23,22 @@
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.2",
     "@types/eslint": "^8.44.7",
+    "@types/jest": "^29.5.8",
     "@types/node": "^20.9.1",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
     "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-jest": "^27.6.0",
     "eslint-plugin-n": "^16.3.1",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
     "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }

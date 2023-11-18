@@ -32,13 +32,21 @@
   "scripts": {
     "build": "yarn clean && yarn compile",
     "clean": "yarn run -T rimraf ./dist",
-    "compile": "yarn run -T tsc"
+    "compile": "yarn run -T tsc",
+    "test": "yarn run -T jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "preset": "ts-jest",
+    "collectCoverage": true,
+    "testPathIgnorePatterns": ["/node_modules/", "/dist/"]
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@mikro-orm/core": "6.0.0-dev.187"
+    "@mikro-orm/core": "6.0.0-dev.187",
+    "@mikro-orm/sqlite": "6.0.0-dev.187"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"
