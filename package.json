@@ -47,8 +47,19 @@
     "typescript": "^5.3.2"
   },
   "lint-staged": {
-    "*.{js,jsx}": ["prettier --write", "eslint --fix --quiet --config .eslintrc.js --resolve-plugins-relative-to .", "git add"],
-    "*.{ts,tsx}": ["prettier --write", "eslint --fix --quiet --config .eslintrc.js --resolve-plugins-relative-to .", "git add"],
-    "*.{scss,scss,css,md,html}": ["prettier --write", "git add"]
+    "*.{js,jsx}": [
+      "prettier --write",
+      "eslint --fix --quiet --config .eslintrc.js --resolve-plugins-relative-to .",
+      "git add"
+    ],
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix --quiet --config .eslintrc.js --resolve-plugins-relative-to .",
+      "git add"
+    ],
+    "*.{scss,scss,css,md,html}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }
