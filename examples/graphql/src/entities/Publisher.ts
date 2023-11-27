@@ -1,5 +1,5 @@
 import { Collection, Entity, Enum, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
-import { Book } from "./Book";
+import { Book } from "./Book.js";
 
 export enum PublisherType {
   LOCAL = "local",

@@ -2,19 +2,33 @@
   "name": "mikro-orm-find-dataloader",
   "version": "1.0.0",
   "description": "Additional dataloaders for the MikroORM EntityManager find/findOne/etc methods.",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "typings": "dist/index.d.ts",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/mjs/index.js",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
       },
-      "require": "./dist/index.js"
-    }
+      "import": {
+        "types": "./dist/mjs/index.d.ts",
+        "default": "./dist/mjs/index.js"
+      },
+      "default": {
+        "types": "./dist/mjs/index.d.ts",
+        "default": "./dist/mjs/index.js"
+      }
+    },
+    "./package.json": "./package.json"
   },
+  "files": [
+    "dist/**/**",
+    "!**/*.tsbuildinfo",
+    "LICENSE",
+    "CHANGELOG.md",
+    "README.md"
+  ],
   "repository": "https://github.com/darkbasic/mikro-orm-dataloaders.git",
   "keywords": [
     "mikro-orm",
@@ -30,29 +44,20 @@
     "node": ">= 18.12.0"
   },
   "scripts": {
-    "build": "yarn run compile",
     "clean": "yarn run -T rimraf ./dist",
-    "compile": "yarn run clean && yarn run -T tsc",
-    "test": "yarn run -T jest"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "preset": "ts-jest",
-    "collectCoverage": true,
-    "testPathIgnorePatterns": ["/node_modules/", "/dist/"]
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@mikro-orm/core": "6.0.0-dev.187",
-    "@mikro-orm/sqlite": "6.0.0-dev.187"
+    "build": "yarn run compile",
+    "compile": "yarn run compile:mjs && yarn run compile:cjs",
+    "compile:mjs": "yarn run -T tsc --build --verbose",
+    "compile:cjs": "yarn run -T tsc --build --verbose tsconfig.cjs.json",
+    "test": "yarn run test:cjs && yarn run test:mjs",
+    "test:cjs": "NODE_OPTIONS=--experimental-vm-modules yarn run -T jest --config jest.config.cjs.json",
+    "test:mjs": "NODE_OPTIONS=--experimental-vm-modules yarn run -T jest --config jest.config.json"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"
   },
-  "dependencies": {
-    "@graphql-tools/executor-http": "^1.0.3",
-    "graphql-tag": "^2.12.6"
+  "devDependencies": {
+    "@mikro-orm/core": "6.0.0-dev.200",
+    "@mikro-orm/sqlite": "6.0.0-dev.200"
   }
 }

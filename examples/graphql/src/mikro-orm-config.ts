@@ -1,8 +1,8 @@
-import { Author } from "./entities/Author";
-import { Book } from "./entities/Book";
-import { Chat } from "./entities/Chat";
-import { Message } from "./entities/Message";
-import { Publisher } from "./entities/Publisher";
+import { Author } from "./entities/Author.js";
+import { Book } from "./entities/Book.js";
+import { Chat } from "./entities/Chat.js";
+import { Message } from "./entities/Message.js";
+import { Publisher } from "./entities/Publisher.js";
 
 export default {
   entities: [Author, Book, Chat, Message, Publisher],

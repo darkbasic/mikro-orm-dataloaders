@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ref, type MikroORM } from "@mikro-orm/core";
-import { Author } from "../entities/Author";
-import { Chat } from "../entities/Chat";
-import { Message } from "../entities/Message";
-import { Publisher } from "../entities/Publisher";
-import { Book } from "../entities/Book";
+import { Author } from "../entities/Author.js";
+import { Chat } from "../entities/Chat.js";
+import { Message } from "../entities/Message.js";
+import { Publisher } from "../entities/Publisher.js";
+import { Book } from "../entities/Book.js";
 
 export async function populateDatabase(em: MikroORM["em"]): Promise<void> {
   const authors = [

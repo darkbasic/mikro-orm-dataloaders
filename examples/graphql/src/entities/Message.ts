@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, ref } from "@mikro-orm/core";
-import { Chat } from "./Chat";
+import { Chat } from "./Chat.js";
 
 @Entity()
 export class Message {

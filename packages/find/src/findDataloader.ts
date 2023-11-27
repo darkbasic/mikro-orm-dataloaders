@@ -9,8 +9,8 @@ import {
   helper,
   type EntityKey,
 } from "@mikro-orm/core";
-import { type FilterQueryDataloader } from "./EntityDataLoader";
-import { type PartialBy } from "./types";
+import { type FilterQueryDataloader } from "./EntityDataLoader.js";
+import { type PartialBy } from "./types.js";
 
 export function groupPrimaryKeysByEntity<T extends AnyEntity<T>>(
   refs: Array<Reference<T>>,

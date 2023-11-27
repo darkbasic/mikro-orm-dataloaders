@@ -1,0 +1,72 @@
+diff --git a/dist/legacy/ts-jest-transformer.js b/dist/legacy/ts-jest-transformer.js
+index 04f9acf9a39f1f5c3bad2155762e08802a0785ed..b8522e3600f28367c406934c9e8dd46fa922deb5 100644
+--- a/dist/legacy/ts-jest-transformer.js
++++ b/dist/legacy/ts-jest-transformer.js
+@@ -196,40 +196,34 @@ var TsJestTransformer = exports.TsJestTransformer = /** @class */ (function () {
+         return result;
+     };
+     TsJestTransformer.prototype.processAsync = function (sourceText, sourcePath, transformOptions) {
++        var _a;
+         return __awaiter(this, void 0, void 0, function () {
+-            var _this = this;
+-            return __generator(this, function (_a) {
+-                this._logger.debug({ fileName: sourcePath, transformOptions: transformOptions }, 'processing', sourcePath);
+-                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+-                        var configs, shouldStringifyContent, babelJest, result, processWithTsResult;
+-                        var _a;
+-                        return __generator(this, function (_b) {
+-                            switch (_b.label) {
+-                                case 0:
+-                                    configs = this._configsFor(transformOptions);
+-                                    shouldStringifyContent = configs.shouldStringifyContent(sourcePath);
+-                                    babelJest = shouldStringifyContent ? undefined : configs.babelJestTransformer;
+-                                    processWithTsResult = this.processWithTs(sourceText, sourcePath, transformOptions);
+-                                    result = {
+-                                        code: processWithTsResult.code,
+-                                    };
+-                                    if ((_a = processWithTsResult.diagnostics) === null || _a === void 0 ? void 0 : _a.length) {
+-                                        reject(configs.createTsError(processWithTsResult.diagnostics));
+-                                    }
+-                                    if (!babelJest) return [3 /*break*/, 2];
+-                                    this._logger.debug({ fileName: sourcePath }, 'calling babel-jest processor');
+-                                    return [4 /*yield*/, babelJest.processAsync(result.code, sourcePath, __assign(__assign({}, transformOptions), { instrument: false }))];
+-                                case 1:
+-                                    // do not instrument here, jest will do it anyway afterwards
+-                                    result = _b.sent();
+-                                    _b.label = 2;
+-                                case 2:
+-                                    result = this.runTsJestHook(sourcePath, sourceText, transformOptions, result);
+-                                    resolve(result);
+-                                    return [2 /*return*/];
+-                            }
+-                        });
+-                    }); })];
++            var configs, shouldStringifyContent, babelJest, result, processWithTsResult;
++            return __generator(this, function (_b) {
++                switch (_b.label) {
++                    case 0:
++                        this._logger.debug({ fileName: sourcePath, transformOptions: transformOptions }, 'processing', sourcePath);
++                        configs = this._configsFor(transformOptions);
++                        shouldStringifyContent = configs.shouldStringifyContent(sourcePath);
++                        babelJest = shouldStringifyContent ? undefined : configs.babelJestTransformer;
++                        processWithTsResult = this.processWithTs(sourceText, sourcePath, transformOptions);
++                        result = {
++                            code: processWithTsResult.code,
++                        };
++                        if ((_a = processWithTsResult.diagnostics) === null || _a === void 0 ? void 0 : _a.length) {
++                            throw configs.createTsError(processWithTsResult.diagnostics);
++                        }
++                        if (!babelJest) return [3 /*break*/, 2];
++                        this._logger.debug({ fileName: sourcePath }, 'calling babel-jest processor');
++                        return [4 /*yield*/, babelJest.processAsync(result.code, sourcePath, __assign(__assign({}, transformOptions), { instrument: false }))];
++                    case 1:
++                        // do not instrument here, jest will do it anyway afterwards
++                        result = _b.sent();
++                        _b.label = 2;
++                    case 2:
++                        result = this.runTsJestHook(sourcePath, sourceText, transformOptions, result);
++                        return [2 /*return*/, result];
++                }
+             });
+         });
+     };

@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`find should fetch books with the find dataloader 1`] = `
+[
+  [
+    {
+      "author": 1,
+      "id": 1,
+      "title": "One",
+    },
+    {
+      "author": 1,
+      "id": 2,
+      "title": "Two",
+    },
+  ],
+  [
+    {
+      "author": 2,
+      "id": 3,
+      "title": "Three",
+    },
+  ],
+  [
+    {
+      "author": 3,
+      "id": 4,
+      "title": "Four",
+    },
+    {
+      "author": 3,
+      "id": 5,
+      "title": "Five",
+    },
+    {
+      "author": 3,
+      "id": 6,
+      "title": "Six",
+    },
+  ],
+  [],
+  [],
+]
+`;

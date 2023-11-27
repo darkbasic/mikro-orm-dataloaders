@@ -6,28 +6,38 @@
     "examples/*"
   ],
   "scripts": {
+    "clean": "yarn workspaces foreach -Ap run clean",
     "build": "yarn run compile",
-    "compile": "yarn workspace mikro-orm-find-dataloader run build",
-    "test": "yarn workspace mikro-orm-find-dataloader run test",
+    "compile": "yarn run compile:mjs && yarn run compile:cjs",
+    "compile:mjs": "yarn tsc --build --verbose",
+    "compile:cjs": "yarn tsc --build --verbose tsconfig.cjs.json",
+    "test": "yarn workspaces foreach -Ap run test",
+    "fix": "eslint --fix '{packages,examples}/*/{src,__tests__}/**/*.ts'",
     "version": "yarn changeset version && yarn install --immutable",
     "release": "yarn run compile && yarn changeset publish",
     "postinstall": "husky install"
   },
   "version": "1.0.0",
   "description": "Additional dataloaders for MikroORM",
-  "main": "dist/index.js",
+  "type": "module",
+  "exports": "./index.js",
   "typings": "dist/index.d.ts",
   "repository": "https://github.com/darkbasic/mikro-orm-dataloaders.git",
   "author": "Niccolò Belli <niccolo.belli@linuxsystems.it>",
   "license": "MIT",
   "packageManager": "yarn@4.0.2",
+  "dependencies": {
+    "tslib": "2.6.2"
+  },
   "devDependencies": {
     "@changesets/changelog-github": "^0.4.8",
     "@changesets/cli": "^2.26.2",
+    "@tsconfig/node20": "^20.1.2",
     "@types/eslint": "^8.44.7",
-    "@types/jest": "^29.5.8",
-    "@types/node": "^20.9.1",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
     "eslint": "^8.54.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "^40.0.0",
@@ -42,13 +52,13 @@
     "nodemon": "^3.0.1",
     "prettier": "^3.1.0",
     "rimraf": "^5.0.5",
-    "ts-jest": "^29.1.1",
+    "ts-jest": "patch:ts-jest@npm%3A29.1.1#~/.yarn/patches/ts-jest-npm-29.1.1-04e888e48e.patch",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.3.2"
   },
   "lint-staged": {
-    "*.ts": [
-      "eslint \"packages/**/*.ts\" \"examples/**/*.ts\" --fix"
-    ]
+    "*.{js,jsx}": ["prettier --write", "eslint --fix --quiet --config .eslintrc.cjs --resolve-plugins-relative-to .", "git add"],
+    "*.{ts,tsx}": ["prettier --write", "eslint --fix --quiet --config .eslintrc.cjs --resolve-plugins-relative-to .", "git add"],
+    "*.{scss,scss,css,md,html}": ["prettier --write", "git add"]
   }
 }

@@ -1,1 +1,1 @@
-export * from "./EntityDataLoader";
+export * from "./EntityDataLoader.js";

@@ -11,7 +11,7 @@ import {
   ref,
   ManyToOne,
 } from "@mikro-orm/sqlite";
-import { EntityDataLoader } from "./EntityDataLoader";
+import { EntityDataLoader } from "../src/EntityDataLoader.js";
 
 @Entity()
 class Author {

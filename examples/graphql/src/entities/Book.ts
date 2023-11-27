@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Ref, ref } from "@mikro-orm/core";
-import { Author } from "./Author";
-import { Publisher } from "./Publisher";
+import { Author } from "./Author.js";
+import { Publisher } from "./Publisher.js";
 
 @Entity()
 export class Book {

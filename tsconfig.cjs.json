@@ -3,10 +3,10 @@
   "files": [],
   "references": [
     {
-      "path": "packages/find"
+      "path": "packages/find/tsconfig.cjs.json"
     },
     {
-      "path": "examples/graphql"
+      "path": "examples/graphql/tsconfig.cjs.json"
     }
   ]
 }

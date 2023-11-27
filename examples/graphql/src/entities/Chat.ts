@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKeyProp, Ref, ref } from "@mikro-orm/core";
-import { Author } from "./Author";
-import { Message } from "./Message";
+import { Author } from "./Author.js";
+import { Message } from "./Message.js";
 
 @Entity()
 export class Chat {

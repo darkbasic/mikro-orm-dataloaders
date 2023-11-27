@@ -12,10 +12,28 @@ import {
   type EntityName,
   type EntityKey,
   type Loaded,
+  // type EntityProps,
+  // type ExpandProperty,
+  // type ExpandScalar,
+  // type FilterValue2,
+  // type Query,
+  // type Scalar,
 } from "@mikro-orm/core";
 import DataLoader from "dataloader";
-import { type DataloaderFind, groupFindQueries, assertHasNewFilterAndMapKey } from "./findDataloader";
-import type { EntityProps, ExpandProperty, ExpandScalar, FilterValue2, Query, Scalar } from "@mikro-orm/core/typings";
+import { type DataloaderFind, groupFindQueries, assertHasNewFilterAndMapKey } from "./findDataloader.js";
+
+// Until new MikroORM update exports them
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type EntityProps<a> = any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ExpandProperty<a> = any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type ExpandScalar<a> = any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type FilterValue2<a> = any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Query<a> = any;
+type Scalar = any;
 
 export interface OperatorMapDataloader<T> {
   // $and?: Query<T>[];
@@ -172,7 +190,7 @@ export class EntityDataLoader<T extends AnyEntity<T> = any, P extends string = n
       : await (this.findLoader.load({
           entityName,
           meta: this.em.getMetadata().get(entityName),
-          filter: filter as FilterQueryDataloader<T>,
+          filter,
           options: options as Pick<FindOptions<T, P, F>, "populate">,
           many: true,
         }) as unknown as Promise<Array<Loaded<K, Hint, Fields>>>);
@@ -194,7 +212,7 @@ export class EntityDataLoader<T extends AnyEntity<T> = any, P extends string = n
       : await (this.findLoader.load({
           entityName,
           meta: this.em.getMetadata().get(entityName),
-          filter: filter as FilterQueryDataloader<T>,
+          filter,
           options: options as Pick<FindOptions<T, P, F>, "populate">,
           many: false,
         }) as unknown as Promise<Loaded<K, Hint, Fields> | null>);
@@ -217,7 +235,7 @@ export class EntityDataLoader<T extends AnyEntity<T> = any, P extends string = n
     const one = (await this.findLoader.load({
       entityName,
       meta: this.em.getMetadata().get(entityName),
-      filter: filter as FilterQueryDataloader<T>,
+      filter,
       options: options as Pick<FindOptions<T, P, F>, "populate">,
       many: false,
     })) as unknown as Loaded<K, Hint, Fields> | null;

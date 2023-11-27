@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { createSchema, createYoga } from "graphql-yoga";
 import { MikroORM } from "@mikro-orm/sqlite";
-import config from "./mikro-orm-config";
-import { populateDatabase } from "./utils/populateDatabase";
-import { assertSingleValue, executeOperation } from "./utils/yoga";
-import gql from "graphql-tag";
-import { Book } from "./entities/Book";
-import { Author } from "./entities/Author";
+import config from "./mikro-orm-config.js";
+import { populateDatabase } from "./utils/populateDatabase.js";
+import { assertSingleValue, executeOperation } from "./utils/yoga.js";
+import { gql } from "graphql-tag";
+import { Book } from "./entities/Book.js";
+import { Author } from "./entities/Author.js";
 import { EntityDataLoader } from "mikro-orm-find-dataloader";
 import { type EntityManager } from "@mikro-orm/core";
 
