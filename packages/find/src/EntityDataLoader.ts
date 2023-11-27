@@ -12,19 +12,24 @@ import {
   type EntityName,
   type EntityKey,
   type Loaded,
+  type EntityProps,
+  type ExpandProperty,
+  type ExpandScalar,
+  type FilterItemValue,
+  type ExpandQuery,
+  type Scalar,
 } from "@mikro-orm/core";
 import DataLoader from "dataloader";
 import { type DataloaderFind, groupFindQueries, assertHasNewFilterAndMapKey } from "./findDataloader";
-import type { EntityProps, ExpandProperty, ExpandScalar, FilterValue2, Query, Scalar } from "@mikro-orm/core/typings";
 
 export interface OperatorMapDataloader<T> {
-  // $and?: Query<T>[];
-  $or?: Array<Query<T>>;
+  // $and?: ExpandQuery<T>[];
+  $or?: Array<ExpandQuery<T>>;
   // $eq?: ExpandScalar<T> | ExpandScalar<T>[];
   // $ne?: ExpandScalar<T>;
   // $in?: ExpandScalar<T>[];
   // $nin?: ExpandScalar<T>[];
-  // $not?: Query<T>;
+  // $not?: ExpandQuery<T>;
   // $gt?: ExpandScalar<T>;
   // $gte?: ExpandScalar<T>;
   // $lt?: ExpandScalar<T>;
@@ -40,8 +45,8 @@ export interface OperatorMapDataloader<T> {
 }
 
 export type FilterValueDataloader<T> =
-  /* OperatorMapDataloader<FilterValue2<T>> | */
-  FilterValue2<T> | FilterValue2<T>[] | null;
+  /* OperatorMapDataloader<FilterItemValue<T>> | */
+  FilterItemValue<T> | FilterItemValue<T>[] | null;
 
 export type QueryDataloader<T> = T extends object
   ? T extends Scalar
