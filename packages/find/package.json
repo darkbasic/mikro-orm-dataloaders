@@ -47,15 +47,14 @@
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "@mikro-orm/core": "6.0.0-dev.220",
-    "@mikro-orm/sqlite": "6.0.0-dev.220"
-  },
   "peerDependencies": {
     "@mikro-orm/core": "^6.0.0"
   },
   "dependencies": {
-    "@graphql-tools/executor-http": "^1.0.3",
-    "graphql-tag": "^2.12.6"
+    "tslib": "2.6.2"
+  },
+  "devDependencies": {
+    "@mikro-orm/core": "6.0.0-dev.220",
+    "@mikro-orm/sqlite": "6.0.0-dev.220"
   }
 }

@@ -16,15 +16,12 @@
     "test": "yarn run build"
   },
   "dependencies": {
-    "@mikro-orm/cli": "6.0.0-dev.220",
+    "@graphql-tools/executor-http": "^1.0.4",
     "@mikro-orm/core": "6.0.0-dev.220",
-    "@mikro-orm/entity-generator": "6.0.0-dev.220",
-    "@mikro-orm/knex": "6.0.0-dev.220",
-    "@mikro-orm/migrations": "6.0.0-dev.220",
-    "@mikro-orm/reflection": "6.0.0-dev.220",
     "@mikro-orm/sqlite": "6.0.0-dev.220",
     "graphql": "16.8.1",
-    "graphql-yoga": "5.0.0",
+    "graphql-tag": "^2.12.6",
+    "graphql-yoga": "5.0.1",
     "tslib": "2.6.2"
   }
 }
