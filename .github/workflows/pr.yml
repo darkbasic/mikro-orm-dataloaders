@@ -5,8 +5,9 @@ on:
       - main
 
 jobs:
-  release:
+  alpha:
     uses: darkbasic/shared-config/.github/workflows/release-snapshot.yml@main
+    if: ${{ github.event.pull_request.title != 'Upcoming Release Changes' }}
     with:
       npmTag: alpha
       buildScript: compile
@@ -15,7 +16,22 @@ jobs:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
       npmToken: ${{ secrets.NPM_TOKEN }}
 
-  dependencies:
-    uses: darkbasic/shared-config/.github/workflows/changesets-dependencies.yaml@main
+  rc:
+    uses: darkbasic/shared-config/.github/workflows/release-snapshot.yml@main
+    if: ${{ github.event.pull_request.title == 'Upcoming Release Changes' }}
+    with:
+      npmTag: rc
+      buildScript: compile
+      nodeVersion: 18
+      restoreDeletedChangesets: true
     secrets:
       githubToken: ${{ secrets.GITHUB_TOKEN }}
+      npmToken: ${{ secrets.NPM_TOKEN }}
+
+  dependencies:
+    uses: darkbasic/shared-config/.github/workflows/changesets-dependencies.yaml@main
+    if: ${{ github.event.pull_request.title != 'Upcoming Release Changes' }}
+    with:
+      appId: ${{ vars.APP_ID }}
+    secrets:
+      privateKey: ${{ secrets.APP_PRIVATE_KEY }}
