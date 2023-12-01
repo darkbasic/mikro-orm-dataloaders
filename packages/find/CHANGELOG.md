@@ -1,5 +1,11 @@
 # mikro-orm-find-dataloader
 
+## 1.1.0
+
+### Minor Changes
+
+- [#3](https://github.com/darkbasic/mikro-orm-dataloaders/pull/3) [`4ce7f14`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/4ce7f14f0c6ce8b86146c950829ea7d6e79992c6) Thanks [@darkbasic](https://github.com/darkbasic)! - Ensure computed queries get processed in parallel
+
 ## 1.0.1
 
 ### Patch Changes
