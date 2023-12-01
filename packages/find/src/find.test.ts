@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
-  type SqlEntityManager,
   MikroORM,
   Entity,
   PrimaryKey,
@@ -10,8 +9,27 @@ import {
   Ref,
   ref,
   ManyToOne,
+  EntityRepositoryType,
+  SimpleLogger,
+  type SqlEntityManager,
 } from "@mikro-orm/sqlite";
-import { EntityDataLoader } from "./EntityDataLoader";
+import { type IFindDataloaderEntityRepository, getFindDataloaderEntityRepository } from "./findRepository";
+import { type LoggerNamespace } from "@mikro-orm/core";
+
+function mockLogger(
+  orm: MikroORM,
+  debug: LoggerNamespace[] = ["query", "query-params"],
+  mock = jest.fn(),
+): jest.Mock<any, any, any> {
+  const logger = orm.config.getLogger();
+  Object.assign(logger, { writer: mock });
+  orm.config.set("debug", debug);
+  logger.setDebugMode(debug);
+
+  return mock;
+}
+
+const findDataloaderDefault = true;
 
 @Entity()
 class Author {
@@ -23,6 +41,8 @@ class Author {
 
   @OneToMany(() => Book, (book) => book.author)
   books = new Collection<Book>(this);
+
+  [EntityRepositoryType]?: IFindDataloaderEntityRepository<Author, typeof findDataloaderDefault>;
 
   constructor({ id, name }: { id?: number; name: string }) {
     if (id != null) {
@@ -42,6 +62,8 @@ class Book {
 
   @ManyToOne(() => Author, { ref: true })
   author: Ref<Author>;
+
+  [EntityRepositoryType]?: IFindDataloaderEntityRepository<Book, typeof findDataloaderDefault>;
 
   constructor({ id, title, author }: { id?: number; title: string; author: Author | Ref<Author> }) {
     if (id != null) {
@@ -76,13 +98,14 @@ async function populateDatabase(em: MikroORM["em"]): Promise<void> {
 
 describe("find", () => {
   let orm: MikroORM;
-  let emFork: SqlEntityManager;
-  let dataloader: EntityDataLoader;
+  let em: SqlEntityManager;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
+      entityRepository: getFindDataloaderEntityRepository(findDataloaderDefault),
       dbName: ":memory:",
       entities: [Author, Book],
+      loggerFactory: (options) => new SimpleLogger(options),
     });
     try {
       await orm.schema.clearDatabase();
@@ -95,23 +118,28 @@ describe("find", () => {
   });
 
   beforeEach(async () => {
-    emFork = orm.em.fork();
-    dataloader = new EntityDataLoader(orm.em.fork());
+    em = orm.em.fork();
   });
 
   it("should fetch books with the find dataloader", async () => {
-    const authors = await emFork.find(Author, {});
-    const authorBooks = await Promise.all(authors.map(async ({ id }) => await dataloader.find(Book, { author: id })));
+    const authors = await em.fork().find(Author, {});
+    const mock = mockLogger(orm);
+    const authorBooks = await Promise.all(
+      authors.map(async ({ id }) => await em.getRepository(Book).find({ author: id })),
+    );
     expect(authorBooks).toBeDefined();
     expect(authorBooks).toMatchSnapshot();
+    expect(mock.mock.calls).toEqual([
+      ["[query] select `b0`.* from `book` as `b0` where `b0`.`author_id` in (1, 2, 3, 4, 5)"],
+    ]);
   });
 
   it("should return the same books as find", async () => {
-    const authors = await emFork.find(Author, {});
+    const authors = await em.fork().find(Author, {});
     const dataloaderBooks = await Promise.all(
-      authors.map(async ({ id }) => await dataloader.find(Book, { author: id })),
+      authors.map(async ({ id }) => await em.getRepository(Book).find({ author: id })),
     );
-    const findBooks = await Promise.all(authors.map(async ({ id }) => await emFork.find(Book, { author: id })));
+    const findBooks = await Promise.all(authors.map(async ({ id }) => await em.fork().find(Book, { author: id })));
     expect(dataloaderBooks.map((res) => res.map(({ id }) => id))).toEqual(
       findBooks.map((res) => res.map(({ id }) => id)),
     );

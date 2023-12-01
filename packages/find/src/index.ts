@@ -1,1 +1,2 @@
-export * from "./EntityDataLoader";
+export * from "./findRepository";
+export * from "./findDataloader";

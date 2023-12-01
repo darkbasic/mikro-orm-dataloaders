@@ -1,6 +1,8 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Ref, ref } from "@mikro-orm/core";
+import { Entity, EntityRepositoryType, ManyToOne, PrimaryKey, Property, Ref, ref } from "@mikro-orm/core";
 import { Author } from "./Author";
 import { Publisher } from "./Publisher";
+import { type IFindDataloaderEntityRepository } from "mikro-orm-find-dataloader";
+import { type findDataloaderDefault } from "../mikro-orm-config";
 
 @Entity()
 export class Book {
@@ -15,6 +17,8 @@ export class Book {
 
   @ManyToOne(() => Publisher, { ref: true, nullable: true })
   publisher!: Ref<Publisher> | null;
+
+  [EntityRepositoryType]?: IFindDataloaderEntityRepository<Book, typeof findDataloaderDefault>;
 
   constructor({ id, title, author }: { id?: number; title: string; author: Author | Ref<Author> }) {
     if (id != null) {

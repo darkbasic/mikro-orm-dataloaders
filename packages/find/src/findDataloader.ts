@@ -1,16 +1,84 @@
 import {
-  Collection,
-  type FindOptions,
   Utils,
+  Collection,
+  helper,
+  type FindOptions,
   type AnyEntity,
   type Reference,
   type Primary,
   type EntityMetadata,
-  helper,
   type EntityKey,
+  type FilterItemValue,
+  type Scalar,
+  type ExpandProperty,
+  type ExpandQuery,
+  type ExpandScalar,
+  type EntityProps,
+  type EntityManager,
+  type EntityName,
 } from "@mikro-orm/core";
-import { type FilterQueryDataloader } from "./EntityDataLoader";
 import { type PartialBy } from "./types";
+import type DataLoader from "dataloader";
+
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable @typescript-eslint/array-type */
+
+export interface OperatorMapDataloader<T> {
+  // $and?: ExpandQuery<T>[];
+  $or?: Array<ExpandQuery<T>>;
+  // $eq?: ExpandScalar<T> | ExpandScalar<T>[];
+  // $ne?: ExpandScalar<T>;
+  // $in?: ExpandScalar<T>[];
+  // $nin?: ExpandScalar<T>[];
+  // $not?: ExpandQuery<T>;
+  // $gt?: ExpandScalar<T>;
+  // $gte?: ExpandScalar<T>;
+  // $lt?: ExpandScalar<T>;
+  // $lte?: ExpandScalar<T>;
+  // $like?: string;
+  // $re?: string;
+  // $ilike?: string;
+  // $fulltext?: string;
+  // $overlap?: string[];
+  // $contains?: string[];
+  // $contained?: string[];
+  // $exists?: boolean;
+}
+
+export type FilterValueDataloader<T> =
+  /* OperatorMapDataloader<FilterItemValue<T>> | */
+  FilterItemValue<T> | FilterItemValue<T>[] | null;
+
+export type QueryDataloader<T> = T extends object
+  ? T extends Scalar
+    ? never
+    : FilterQueryDataloader<T>
+  : FilterValueDataloader<T>;
+
+export type FilterObjectDataloader<T> = {
+  -readonly [K in EntityKey<T>]?:
+    | QueryDataloader<ExpandProperty<T[K]>>
+    | FilterValueDataloader<ExpandProperty<T[K]>>
+    | null;
+};
+
+export type Compute<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
+export type ObjectQueryDataloader<T> = Compute<OperatorMapDataloader<T> & FilterObjectDataloader<T>>;
+
+// FilterQuery<T>
+export type FilterQueryDataloader<T extends object> =
+  | ObjectQueryDataloader<T>
+  | NonNullable<ExpandScalar<Primary<T>>> // Just 5 (or [5, 7] for composite keys). Currently not supported, we do {id: number} instead. Should be easy to add.
+  // Accepts {id: 5} or any scalar like {name: "abc"}, IdentifiedReference (because it extends {id: 5}) but not just 5 nor {location: IdentifiedReference} (don't know why).
+  // OperatorMap must be cut down to just a couple.
+  | NonNullable<EntityProps<T> & OperatorMapDataloader<T>>
+  | FilterQueryDataloader<T>[];
+
+/* eslint-enable @typescript-eslint/ban-types */
+/* eslint-enable @typescript-eslint/array-type */
 
 export function groupPrimaryKeysByEntity<T extends AnyEntity<T>>(
   refs: Array<Reference<T>>,
@@ -218,7 +286,7 @@ export interface DataloaderFind<K extends object, Hint extends string = never, F
   many: boolean;
 }
 
-export function groupFindQueries(
+export function groupFindQueriesByOpts(
   dataloaderFinds: Array<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>,
 ): Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]> {
   const queriesMap = new Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]>();
@@ -231,7 +299,6 @@ export function groupFindQueries(
       let queryMap = queriesMap.get(key);
       if (queryMap == null) {
         queryMap = [structuredClone(newFilter), {}];
-        updateQueryFilter(queryMap, newFilter);
         queriesMap.set(key, queryMap);
       } else {
         updateQueryFilter(queryMap, newFilter, options);
@@ -239,6 +306,77 @@ export function groupFindQueries(
     });
   }
   return queriesMap;
+}
+
+export function getFindBatchLoadFn<Entity extends object>(
+  em: EntityManager,
+  entityName: EntityName<Entity>,
+): DataLoader.BatchLoadFn<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">, any> {
+  return async (dataloaderFinds: Array<PartialBy<DataloaderFind<any, any>, "filtersAndKeys">>) => {
+    const optsMap = groupFindQueriesByOpts(dataloaderFinds);
+    assertHasNewFilterAndMapKey(dataloaderFinds);
+
+    const promises = optsMapToQueries(optsMap, em, entityName);
+    const resultsMap = new Map(await Promise.all(promises));
+
+    return dataloaderFinds.map(({ filtersAndKeys, many }) => {
+      const res = filtersAndKeys.reduce<any[]>((acc, { key, newFilter }) => {
+        const entities = resultsMap.get(key);
+        if (entities == null) {
+          // Should never happen
+          /* istanbul ignore next */
+          throw new Error("Cannot match results");
+        }
+        const res = entities[many ? "filter" : "find"]((entity) => {
+          return filterResult(entity, newFilter);
+        });
+        acc.push(...(Array.isArray(res) ? res : [res]));
+        return acc;
+      }, []);
+      return many ? res : res[0] ?? null;
+    });
+
+    function filterResult<K extends object>(entity: K, filter: FilterQueryDataloader<K>): boolean {
+      for (const [key, value] of Object.entries(filter)) {
+        const entityValue = entity[key as keyof K];
+        if (Array.isArray(value)) {
+          if (Array.isArray(entityValue)) {
+            // Collection
+            if (!value.every((el) => entityValue.includes(el))) {
+              return false;
+            }
+          } else {
+            // Single value
+            if (!value.includes(entityValue)) {
+              return false;
+            }
+          }
+        } else {
+          // Object: recursion
+          if (!filterResult(entityValue as object, value)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+  };
+}
+
+export function optsMapToQueries<Entity extends object>(
+  optsMap: Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]>,
+  em: EntityManager,
+  entityName: EntityName<Entity>,
+): Array<Promise<[string, any[]]>> {
+  return Array.from(optsMap, async ([key, [filter, options]]): Promise<[string, any[]]> => {
+    const findOptions = {
+      ...(options?.populate != null && {
+        populate: options.populate === true ? ["*"] : Array.from(options.populate),
+      }),
+    } satisfies Pick<FindOptions<any, any>, "populate">;
+    const entities = await em.find(entityName, filter, findOptions);
+    return [key, entities];
+  });
 }
 
 export function assertHasNewFilterAndMapKey(

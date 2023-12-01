@@ -1,5 +1,7 @@
-import { Collection, Entity, Enum, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
+import { Collection, Entity, EntityRepositoryType, Enum, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
 import { Book } from "./Book";
+import { type IFindDataloaderEntityRepository } from "mikro-orm-find-dataloader";
+import { type findDataloaderDefault } from "../mikro-orm-config";
 
 export enum PublisherType {
   LOCAL = "local",
@@ -19,6 +21,8 @@ export class Publisher {
 
   @Enum(() => PublisherType)
   type = PublisherType.LOCAL;
+
+  [EntityRepositoryType]?: IFindDataloaderEntityRepository<Publisher, typeof findDataloaderDefault>;
 
   constructor({ id, name = "asd", type = PublisherType.LOCAL }: { id?: number; name?: string; type?: PublisherType }) {
     if (id != null) {
