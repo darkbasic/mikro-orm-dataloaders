@@ -7,7 +7,7 @@ import { assertSingleValue, executeOperation } from "./utils/yoga";
 import gql from "graphql-tag";
 import { Book } from "./entities/Book";
 import { Author } from "./entities/Author";
-import { EntityDataLoader } from "mikro-orm-find-dataloader";
+// import { EntityDataLoader } from "mikro-orm-find-dataloader";
 import { type EntityManager } from "@mikro-orm/core";
 
 const getAuthorsQuery = gql`
@@ -41,7 +41,7 @@ void (async () => {
   await populateDatabase(em);
   em = orm.em.fork();
 
-  const entityDataLoader = new EntityDataLoader(em);
+  // const entityDataLoader = new EntityDataLoader(em);
 
   const schema = createSchema({
     typeDefs: gql`
@@ -68,11 +68,21 @@ void (async () => {
           // return await author.books.load();
           // return await author.books.load({ dataloader: true });
           // return await em.find(Book, { author: author.id });
-          return await entityDataLoader.find(Book, { author: author.id });
+          // return await entityDataLoader.find(Book, { author: author.id });
+          return await em.getRepository(Book).find({ author: author.id }, { dataloader: true });
         },
       },
     },
   });
+
+  /*
+  await em.getRepository(Book).find({}, { populate: ["*"], limit: 2 });
+  await em.getRepository(Book).find({}, { populate: ["*"] });
+  await em.getRepository(Book).find({}, { populate: ["*"], limit: 2, dataloader: false });
+  await em.getRepository(Book).find({}, { populate: ["*"], dataloader: false });
+  await em.getRepository(Book).find({}, { populate: ["*"], limit: 2, dataloader: true });
+  await em.getRepository(Book).find({}, { populate: ["*"], dataloader: true });
+  */
 
   const yoga = createYoga({ schema });
   const res = await executeOperation(yoga, getAuthorsQuery);

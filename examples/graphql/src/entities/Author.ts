@@ -1,6 +1,8 @@
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
+import { Collection, Entity, EntityRepositoryType, ManyToMany, OneToMany, PrimaryKey, Property } from "@mikro-orm/core";
 import { Book } from "./Book";
 import { Chat } from "./Chat";
+import { type IFindDataloaderEntityRepository } from "mikro-orm-find-dataloader";
+import { type findDataloaderDefault } from "../mikro-orm-config";
 
 @Entity()
 export class Author {
@@ -29,6 +31,8 @@ export class Author {
 
   @OneToMany(() => Chat, (chat) => chat.owner)
   ownedChats: Collection<Chat> = new Collection<Chat>(this);
+
+  [EntityRepositoryType]?: IFindDataloaderEntityRepository<Author, typeof findDataloaderDefault>;
 
   constructor({ id, name, email }: { id?: number; name: string; email: string }) {
     if (id != null) {
