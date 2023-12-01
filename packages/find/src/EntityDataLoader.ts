@@ -95,24 +95,17 @@ export class EntityDataLoader<T extends AnyEntity<T> = any, P extends string = n
     >(async (dataloaderFinds) => {
       const queriesMap = groupFindQueries(dataloaderFinds);
       assertHasNewFilterAndMapKey(dataloaderFinds);
-      const resultsMap = new Map<string, any[] | Error>();
-      await Promise.all(
-        Array.from(queriesMap, async ([key, [filter, options]]): Promise<void> => {
-          const entityName = key.substring(0, key.indexOf("|"));
-          let entitiesOrError: any[] | Error;
-          const findOptions = {
-            ...(options?.populate != null && {
-              populate: options.populate === true ? ["*"] : Array.from(options.populate),
-            }),
-          } satisfies Pick<FindOptions<any, any>, "populate">;
-          try {
-            entitiesOrError = await em.getRepository(entityName).find(filter, findOptions);
-          } catch (e) {
-            entitiesOrError = e as Error;
-          }
-          resultsMap.set(key, entitiesOrError);
-        }),
-      );
+      const promises = Array.from(queriesMap, async ([key, [filter, options]]): Promise<[string, any[]]> => {
+        const entityName = key.substring(0, key.indexOf("|"));
+        const findOptions = {
+          ...(options?.populate != null && {
+            populate: options.populate === true ? ["*"] : Array.from(options.populate),
+          }),
+        } satisfies Pick<FindOptions<any, any>, "populate">;
+        const entities = await em.getRepository(entityName).find(filter, findOptions);
+        return [key, entities];
+      });
+      const resultsMap = new Map(await Promise.all(promises));
 
       return dataloaderFinds.map(({ filtersAndKeys, many }) => {
         const res = filtersAndKeys.reduce<any[]>((acc, { key, newFilter }) => {
