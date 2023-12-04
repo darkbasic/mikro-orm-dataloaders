@@ -124,9 +124,23 @@ describe("find", () => {
   it("should fetch books with the find dataloader", async () => {
     const authors = await em.fork().find(Author, {});
     const mock = mockLogger(orm);
-    const authorBooks = await Promise.all(
-      authors.map(async ({ id }) => await em.getRepository(Book).find({ author: id })),
-    );
+    const authorBooks = await Promise.all([
+      ...authors.map(async ({ id }) => await em.getRepository(Book).find({ author: id })),
+      // em.getRepository(Book).find({ author: { books: { author: 1 } } }),
+      // em.getRepository(Book).find({ title: "a", author: [1, { books: { author: 1 } }] }),
+      // em.getRepository(Book).find({ title: "a", author: { books: { author: 1 } } }),
+      // em.getRepository(Book).find({ title: "a", author: { books: { author: { name: "a" } } } }),
+      // em.getRepository(Book).find({ title: "a", author: { books: { title: "a" } } }),
+      // em.getRepository(Book).find({ title: "a", author: { books: 1 } }),
+      // em.getRepository(Book).find({ author: 1 }),
+      // em.getRepository(Book).find({ author: 1 }),
+      // em.getRepository(Book).find({ id: 2, title: "b", author: { id: 1, name: "a" } }),
+      // em.getRepository(Book).find({ author: { id: 1, name: "a" } }),
+      // em.getRepository(Book).find({ author: { id: 2 } }),
+      // em.getRepository(Book).find({ author: { id: 3 } }),
+      // em.getRepository(Book).find({ author: { name: "a" } }),
+    ]);
+    // console.log(mock.mock.calls);
     expect(authorBooks).toBeDefined();
     expect(authorBooks).toMatchSnapshot();
     expect(mock.mock.calls).toEqual([
