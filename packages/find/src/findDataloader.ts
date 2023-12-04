@@ -248,10 +248,15 @@ function getNewFiltersAndMapKeys<K extends object>(
   }
 }
 
+// The purpose of this function on a freshly created query map is just to add populate options
+// to the query map. A brand new query map already contains an array with the current element
+// as its sole value so there is no need to update it, otherwise we would get the cur element twice.
+// TODO: use Sets to avoid duplicates even in subsequent updates.
 function updateQueryFilter<K extends object, P extends string = never>(
   [acc, accOptions]: [FilterQueryDataloader<K>, { populate?: true | Set<any> }?],
   cur: FilterQueryDataloader<K>,
   options?: Pick<FindOptions<K, P>, "populate">,
+  newQueryMap?: boolean,
 ): void {
   if (options?.populate != null && accOptions != null && accOptions.populate !== true) {
     if (Array.isArray(options.populate) && options.populate[0] === "*") {
@@ -266,13 +271,15 @@ function updateQueryFilter<K extends object, P extends string = never>(
       }
     }
   }
-  for (const [key, value] of Object.entries(acc)) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const curValue = (cur as Record<string, any[]>)[key]!;
-    if (Array.isArray(value)) {
-      value.push(...curValue.reduce<any[]>((acc, cur) => acc.concat(cur), []));
-    } else {
-      updateQueryFilter([value], curValue);
+  if (newQueryMap !== true) {
+    for (const [key, value] of Object.entries(acc)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const curValue = (cur as Record<string, any[]>)[key]!;
+      if (Array.isArray(value)) {
+        value.push(...curValue.reduce<any[]>((acc, cur) => acc.concat(cur), []));
+      } else {
+        updateQueryFilter([value], curValue);
+      }
     }
   }
 }
@@ -299,6 +306,7 @@ export function groupFindQueriesByOpts(
       let queryMap = queriesMap.get(key);
       if (queryMap == null) {
         queryMap = [structuredClone(newFilter), {}];
+        updateQueryFilter(queryMap, newFilter, options, true);
         queriesMap.set(key, queryMap);
       } else {
         updateQueryFilter(queryMap, newFilter, options);
