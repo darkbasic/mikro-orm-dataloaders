@@ -1,5 +1,11 @@
 # mikro-orm-find-dataloader
 
+## 2.0.1
+
+### Patch Changes
+
+- [#9](https://github.com/darkbasic/mikro-orm-dataloaders/pull/9) [`a904df2`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/a904df20f256f25064d4c1ce482be54bad10fcdd) Thanks [@darkbasic](https://github.com/darkbasic)! - Make sure we always add populate options to the queryMap
+
 ## 2.0.0
 
 ### Major Changes
