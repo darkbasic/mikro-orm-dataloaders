@@ -490,7 +490,9 @@ export function getFindBatchLoadFn<Entity extends object>(
         } else {
           // Our current filter is an object
           if (entityValue instanceof Collection) {
-            entityValue.find((entity) => filterResult(entity, value));
+            if (!entityValue.getItems().some((entity) => filterResult(entity, value))) {
+              return false;
+            }
           } else if (!filterResult(entityValue as object, value)) {
             return false;
           }
