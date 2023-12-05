@@ -1,5 +1,11 @@
 # mikro-orm-find-dataloader
 
+## 2.1.1
+
+### Patch Changes
+
+- [#13](https://github.com/darkbasic/mikro-orm-dataloaders/pull/13) [`6229c18`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/6229c18ce460d8bef08f65ec969e8c8c6253b0ac) Thanks [@darkbasic](https://github.com/darkbasic)! - fix: collection filtering condition
+
 ## 2.1.0
 
 ### Minor Changes
