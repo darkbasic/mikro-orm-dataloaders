@@ -488,6 +488,7 @@ export function getFindBatchLoadFn<Entity extends object>(
       for (const [key, value] of Object.entries(filter)) {
         const entityValue = entity[key as keyof K];
         if (Array.isArray(value)) {
+          // Our current filter is an array
           if (Array.isArray(entityValue)) {
             // Collection
             if (!value.every((el) => entityValue.includes(el))) {
@@ -500,8 +501,10 @@ export function getFindBatchLoadFn<Entity extends object>(
             }
           }
         } else {
-          // Object: recursion
-          if (!filterResult(entityValue as object, value)) {
+          // Our current filter is an object
+          if (entityValue instanceof Collection) {
+            entityValue.find((entity) => filterResult(entity, value));
+          } else if (!filterResult(entityValue as object, value)) {
             return false;
           }
         }
@@ -522,9 +525,6 @@ export function optsMapToQueries<Entity extends object>(
         populate: options.populate === true ? ["*"] : Array.from(options.populate),
       }),
     } satisfies Pick<FindOptions<any, any>, "populate">;
-    console.log("entityName", entityName);
-    console.log("filter", filter);
-    console.log("findOptions", findOptions);
     const entities = await em.find(entityName, filter, findOptions);
     return [key, entities];
   });
