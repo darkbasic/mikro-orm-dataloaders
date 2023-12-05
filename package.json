@@ -47,6 +47,11 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.3.2"
   },
+  "jest": {
+    "projects": [
+      "<rootDir>/packages/*"
+    ]
+  },
   "lint-staged": {
     "*.{js,jsx}": [
       "prettier --write",

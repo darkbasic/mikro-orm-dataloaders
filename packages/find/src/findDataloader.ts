@@ -124,7 +124,90 @@ export function groupInversedOrMappedKeysByEntity<T extends AnyEntity<T>>(
   return entitiesMap;
 }
 
+function allKeysArePK<K extends object>(
+  keys: Array<EntityKey<K>> | undefined,
+  primaryKeys: Array<EntityKey<K>>,
+): boolean {
+  if (keys == null) {
+    return false;
+  }
+  if (keys.length !== primaryKeys.length) {
+    return false;
+  }
+  for (const key of keys) {
+    if (!primaryKeys.includes(key)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// {id: 5, name: "a"} returns false because contains additional fields
+// Returns true for all PK formats including {id: 1} or {owner: 1, recipient: 2}
+function isPK<K extends object>(filter: FilterQueryDataloader<K>, meta: EntityMetadata<K>): boolean {
+  if (meta == null) {
+    return false;
+  }
+  if (meta.compositePK) {
+    // COMPOSITE
+    if (Array.isArray(filter)) {
+      // PK or PK[] or object[]
+      // [1, 2]
+      // [[1, 2], [3, 4]]
+      // [{owner: 1, recipient: 2}, {owner: 3, recipient: 4}]
+      // [{owner: 1, recipient: 2, sex: 0}, {owner: 3, recipient: 4, sex: 1}]
+      if (Utils.isPrimaryKey(filter, meta.compositePK)) {
+        // PK
+        return true;
+      }
+      if (Utils.isPrimaryKey(filter[0], meta.compositePK)) {
+        // PK[]
+        return true;
+      }
+      const keys = typeof filter[0] === "object" ? (Object.keys(filter[0]) as Array<EntityKey<K>>) : undefined;
+      if (allKeysArePK(keys, meta.primaryKeys)) {
+        // object is PK or PK[]
+        return true;
+      }
+    } else {
+      // object
+      // {owner: 1, recipient: 2, sex: 0}
+      const keys = typeof filter === "object" ? (Object.keys(filter) as Array<EntityKey<K>>) : undefined;
+      if (allKeysArePK(keys, meta.primaryKeys)) {
+        // object is PK
+        return true;
+      }
+    }
+  } else {
+    // NOT COMPOSITE
+    if (Array.isArray(filter)) {
+      // PK[]
+      // [1, 2]
+      // [{id: 1}, {id: 2}] NOT POSSIBLE FOR NON COMPOSITE
+      if (Utils.isPrimaryKey(filter[0])) {
+        return true;
+      }
+    } else {
+      // PK or object
+      // 1
+      // {id: [1, 2], sex: 0} or {id: 1, sex: 0}
+      if (Utils.isPrimaryKey(filter)) {
+        // PK
+        return true;
+      }
+      const keys =
+        typeof filter === "object" ? (Object.keys(filter) as [EntityKey<K>, ...Array<EntityKey<K>>]) : undefined;
+      if (keys?.length === 1 && keys[0] === meta.primaryKeys[0]) {
+        // object is PK
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 // Call this fn only if keyProp.targetMeta != null otherwise you will get false positives
+// Returns only PKs in short-hand format like 1 or [1, 1] not {id: 1} or {owner: 1, recipient: 2}
 function getPKs<K extends object>(
   filter: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
@@ -259,7 +342,7 @@ function updateQueryFilter<K extends object, P extends string = never>(
   newQueryMap?: boolean,
 ): void {
   if (options?.populate != null && accOptions != null && accOptions.populate !== true) {
-    if (Array.isArray(options.populate) && options.populate[0] === "*") {
+    if (Array.isArray(options.populate) && options.populate.includes("*")) {
       accOptions.populate = true;
     } else if (Array.isArray(options.populate)) {
       if (accOptions.populate == null) {
@@ -276,9 +359,51 @@ function updateQueryFilter<K extends object, P extends string = never>(
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const curValue = (cur as Record<string, any[]>)[key]!;
       if (Array.isArray(value)) {
-        value.push(...curValue.reduce<any[]>((acc, cur) => acc.concat(cur), []));
+        // value.push(...curValue.reduce<any[]>((acc, cur) => acc.concat(cur), []));
+        value.push(...structuredClone(curValue));
       } else {
         updateQueryFilter([value], curValue);
+      }
+    }
+  }
+}
+
+// The least amount of populate necessary to map the dataloader results to their original queries
+function getMandatoryPopulate<K extends object>(
+  cur: FilterQueryDataloader<K>,
+  meta: EntityMetadata<K>,
+): string | undefined;
+function getMandatoryPopulate<K extends object>(
+  cur: FilterQueryDataloader<K>,
+  meta: EntityMetadata<K>,
+  options: { populate?: Set<any> },
+): void;
+function getMandatoryPopulate<K extends object>(
+  cur: FilterQueryDataloader<K>,
+  meta: EntityMetadata<K>,
+  options?: { populate?: Set<any> },
+): any {
+  for (const [key, value] of Object.entries(cur)) {
+    const keyProp = meta.properties[key as EntityKey<K>];
+    if (keyProp == null) {
+      throw new Error(`Cannot find properties for ${key}`);
+    }
+    // If our current key leads to scalar we don't need to populate anything
+    if (keyProp.targetMeta != null) {
+      // Our current key points to either a Reference or a Collection
+      // We need to populate all Collections
+      // We also need to populate References whenever we have to further match non-PKs properties
+      if (keyProp.ref !== true || !isPK(value, keyProp.targetMeta)) {
+        const furtherPop = getMandatoryPopulate(value, keyProp.targetMeta);
+        const computedPopulate = furtherPop == null ? `${key}` : `${key}.${furtherPop}`;
+        if (options != null) {
+          if (options.populate == null) {
+            options.populate = new Set();
+          }
+          options.populate.add(computedPopulate);
+        } else {
+          return computedPopulate;
+        }
       }
     }
   }
@@ -305,7 +430,9 @@ export function groupFindQueriesByOpts(
       dataloaderFind.filtersAndKeys?.push({ key, newFilter });
       let queryMap = queriesMap.get(key);
       if (queryMap == null) {
-        queryMap = [structuredClone(newFilter), {}];
+        const queryMapOpts = {};
+        queryMap = [structuredClone(newFilter), queryMapOpts];
+        getMandatoryPopulate(newFilter, meta, queryMapOpts);
         updateQueryFilter(queryMap, newFilter, options, true);
         queriesMap.set(key, queryMap);
       } else {
@@ -348,6 +475,7 @@ export function getFindBatchLoadFn<Entity extends object>(
       for (const [key, value] of Object.entries(filter)) {
         const entityValue = entity[key as keyof K];
         if (Array.isArray(value)) {
+          // Our current filter is an array
           if (Array.isArray(entityValue)) {
             // Collection
             if (!value.every((el) => entityValue.includes(el))) {
@@ -360,8 +488,10 @@ export function getFindBatchLoadFn<Entity extends object>(
             }
           }
         } else {
-          // Object: recursion
-          if (!filterResult(entityValue as object, value)) {
+          // Our current filter is an object
+          if (entityValue instanceof Collection) {
+            entityValue.find((entity) => filterResult(entity, value));
+          } else if (!filterResult(entityValue as object, value)) {
             return false;
           }
         }
