@@ -1,5 +1,19 @@
 # mikro-orm-find-dataloader
 
+## 2.1.0
+
+### Minor Changes
+
+- [#11](https://github.com/darkbasic/mikro-orm-dataloaders/pull/11) [`e69b274`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/e69b27449d95ec4edd1d3e2eccc8b18c0d3316e4) Thanks [@darkbasic](https://github.com/darkbasic)! - perf: run mandatory populate logic once per querymap
+
+- [#11](https://github.com/darkbasic/mikro-orm-dataloaders/pull/11) [`2ac3bc0`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/2ac3bc06347c7314930c5bee6549db054ce0fe74) Thanks [@darkbasic](https://github.com/darkbasic)! - fix: filter collections when reassigning results
+
+- [#11](https://github.com/darkbasic/mikro-orm-dataloaders/pull/11) [`5e17832`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/5e178321bd951c4399a06ab2dfe0d956f12bd75e) Thanks [@darkbasic](https://github.com/darkbasic)! - fix: compute mandatory populates even if not efficiently
+
+### Patch Changes
+
+- [#11](https://github.com/darkbasic/mikro-orm-dataloaders/pull/11) [`ee1cafa`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/ee1cafad5898b17eeabad8731395667abcadbba2) Thanks [@darkbasic](https://github.com/darkbasic)! - Fix vscode test runner
+
 ## 2.0.1
 
 ### Patch Changes
