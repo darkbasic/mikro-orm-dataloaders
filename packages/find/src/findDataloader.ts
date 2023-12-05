@@ -263,20 +263,20 @@ COMPOSITE PK:
 const asc = (a: string, b: string): number => a.localeCompare(b);
 const notNull = (el: string | undefined): boolean => el != null;
 
-function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
+function getNewFiltersAndMapKeys<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
   entityName: string,
-): Array<[FilterQueryDataloader<K>, string, Set<string>?]>;
-function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
+): Array<[FilterQueryDataloader<K>, string]>;
+function getNewFiltersAndMapKeys<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
-): [FilterQueryDataloader<K>, string, string?];
-function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
+): [FilterQueryDataloader<K>, string];
+function getNewFiltersAndMapKeys<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
   entityName?: string,
-): [FilterQueryDataloader<K>, string, string?] | Array<[FilterQueryDataloader<K>, string, Set<string>?]> {
+): [FilterQueryDataloader<K>, string] | Array<[FilterQueryDataloader<K>, string]> {
   const PKs = getPKs(cur, meta);
   if (PKs != null) {
     const res: [FilterQueryDataloader<K>, string] = [
@@ -289,8 +289,6 @@ function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
   } else {
     const newFilter: any = {};
     const keys: string[] = [];
-    const populateSet = new Set<string>();
-    let computedPopulate: string | undefined;
     if (Array.isArray(cur)) {
       // COMPOSITE PKs like [{owner: 1, recipient: 2}, {recipient: 4, owner: 3}]
       for (const key of meta.primaryKeys) {
@@ -308,7 +306,7 @@ function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
         // Using $or at the top level means that we can treat it as two separate queries and filter results from either of them
         if (key === "$or" && entityName != null) {
           return (value as Array<FilterQueryDataloader<K>>)
-            .map((el) => getNewFiltersMapKeysAndMandatoryPopulate(el, meta, entityName))
+            .map((el) => getNewFiltersAndMapKeys(el, meta, entityName))
             .flat();
         }
         const keyProp = meta.properties[key as EntityKey<K>];
@@ -316,34 +314,19 @@ function getNewFiltersMapKeysAndMandatoryPopulate<K extends object>(
           throw new Error(`Cannot find properties for ${key}`);
         }
         if (keyProp.targetMeta == null) {
-          // Our current key might lead to a scalar (thus we don't need to populate anything)
-          // or to an explicited PK like {id: 1, name: 'a'}
           newFilter[key] = Array.isArray(value) ? value : [value];
           keys.push(key);
         } else {
-          // Our current key points to either a Reference or a Collection
-          const [subFilter, subKey, furtherPop] = getNewFiltersMapKeysAndMandatoryPopulate(value, keyProp.targetMeta);
+          const [subFilter, subKey] = getNewFiltersAndMapKeys(value, keyProp.targetMeta);
           newFilter[key] = subFilter;
           keys.push(`${key}:${subKey}`);
-          // We need to populate all Collections and all the References
-          // where we further match non-PKs properties
-          if (keyProp.ref !== true || !isPK(value, keyProp.targetMeta)) {
-            computedPopulate = furtherPop == null ? `${key}` : `${key}.${furtherPop}`;
-            if (entityName != null) {
-              populateSet.add(computedPopulate);
-            } else {
-              // We return computedPopulate as the third element of the array
-            }
-          }
         }
       }
       const res: [FilterQueryDataloader<K>, string] = [
         newFilter,
         [entityName, `{${keys.sort(asc).join(",")}}`].filter(notNull).join("|"),
       ];
-      return entityName == null
-        ? [...res, computedPopulate]
-        : [[...res, populateSet.size === 0 ? undefined : populateSet]];
+      return entityName == null ? res : [res];
     }
   }
 }
@@ -386,19 +369,19 @@ function updateQueryFilter<K extends object, P extends string = never>(
 }
 
 // The least amount of populate necessary to map the dataloader results to their original queries
-export function getMandatoryPopulate<K extends object>(
+function getMandatoryPopulate<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
 ): string | undefined;
-export function getMandatoryPopulate<K extends object>(
+function getMandatoryPopulate<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
-  populate: Set<any>,
+  options: { populate?: Set<any> },
 ): void;
-export function getMandatoryPopulate<K extends object>(
+function getMandatoryPopulate<K extends object>(
   cur: FilterQueryDataloader<K>,
   meta: EntityMetadata<K>,
-  populate?: Set<any>,
+  options?: { populate?: Set<any> },
 ): any {
   for (const [key, value] of Object.entries(cur)) {
     const keyProp = meta.properties[key as EntityKey<K>];
@@ -410,12 +393,14 @@ export function getMandatoryPopulate<K extends object>(
       // Our current key points to either a Reference or a Collection
       // We need to populate all Collections
       // We also need to populate References whenever we have to further match non-PKs properties
-      const PKs = getPKs(value, keyProp.targetMeta);
-      if (keyProp.ref !== true || PKs == null) {
-        const furtherPopulate = getMandatoryPopulate(value, keyProp.targetMeta);
-        const computedPopulate = furtherPopulate == null ? `${key}` : `${key}.${furtherPopulate}`;
-        if (populate != null) {
-          populate.add(computedPopulate);
+      if (keyProp.ref !== true || !isPK(value, keyProp.targetMeta)) {
+        const furtherPop = getMandatoryPopulate(value, keyProp.targetMeta);
+        const computedPopulate = furtherPop == null ? `${key}` : `${key}.${furtherPop}`;
+        if (options != null) {
+          if (options.populate == null) {
+            options.populate = new Set();
+          }
+          options.populate.add(computedPopulate);
         } else {
           return computedPopulate;
         }
@@ -439,13 +424,15 @@ export function groupFindQueriesByOpts(
   const queriesMap = new Map<string, [FilterQueryDataloader<any>, { populate?: true | Set<any> }?]>();
   for (const dataloaderFind of dataloaderFinds) {
     const { entityName, meta, filter, options } = dataloaderFind;
-    const filtersAndKeys = getNewFiltersMapKeysAndMandatoryPopulate(filter, meta, entityName);
+    const filtersAndKeys = getNewFiltersAndMapKeys(filter, meta, entityName);
     dataloaderFind.filtersAndKeys = [];
-    filtersAndKeys.forEach(([newFilter, key, mandatoryPopulate]) => {
+    filtersAndKeys.forEach(([newFilter, key]) => {
       dataloaderFind.filtersAndKeys?.push({ key, newFilter });
       let queryMap = queriesMap.get(key);
       if (queryMap == null) {
-        queryMap = [structuredClone(newFilter), { ...(mandatoryPopulate != null && { populate: mandatoryPopulate }) }];
+        const queryMapOpts = {};
+        queryMap = [structuredClone(newFilter), queryMapOpts];
+        getMandatoryPopulate(newFilter, meta, queryMapOpts);
         updateQueryFilter(queryMap, newFilter, options, true);
         queriesMap.set(key, queryMap);
       } else {
