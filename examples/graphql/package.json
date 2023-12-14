@@ -17,8 +17,8 @@
   },
   "dependencies": {
     "@graphql-tools/executor-http": "^1.0.5",
-    "@mikro-orm/core": "6.0.0-dev.252",
-    "@mikro-orm/sqlite": "6.0.0-dev.252",
+    "@mikro-orm/core": "6.0.0-dev.261",
+    "@mikro-orm/sqlite": "6.0.0-dev.261",
     "graphql": "16.8.1",
     "graphql-tag": "^2.12.6",
     "graphql-yoga": "5.0.2",
