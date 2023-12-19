@@ -11,7 +11,6 @@ import {
   type FilterItemValue,
   type Scalar,
   type ExpandProperty,
-  type ExpandQuery,
   type ExpandScalar,
   type EntityProps,
   type EntityManager,
@@ -25,12 +24,15 @@ import type DataLoader from "dataloader";
 
 export interface OperatorMapDataloader<T> {
   // $and?: ExpandQuery<T>[];
-  $or?: Array<ExpandQuery<T>>;
+  $or?: Array<ExpandQueryDataloader<T>>;
   // $eq?: ExpandScalar<T> | ExpandScalar<T>[];
   // $ne?: ExpandScalar<T>;
   // $in?: ExpandScalar<T>[];
   // $nin?: ExpandScalar<T>[];
   // $not?: ExpandQuery<T>;
+  // $none?: ExpandQuery<T>;
+  // $some?: ExpandQuery<T>;
+  // $every?: ExpandQuery<T>;
   // $gt?: ExpandScalar<T>;
   // $gte?: ExpandScalar<T>;
   // $lt?: ExpandScalar<T>;
@@ -39,9 +41,9 @@ export interface OperatorMapDataloader<T> {
   // $re?: string;
   // $ilike?: string;
   // $fulltext?: string;
-  // $overlap?: string[];
-  // $contains?: string[];
-  // $contained?: string[];
+  // $overlap?: string[] | object;
+  // $contains?: string[] | object;
+  // $contained?: string[] | object;
   // $exists?: boolean;
 }
 
@@ -49,7 +51,7 @@ export type FilterValueDataloader<T> =
   /* OperatorMapDataloader<FilterItemValue<T>> | */
   FilterItemValue<T> | FilterItemValue<T>[] | null;
 
-export type QueryDataloader<T> = T extends object
+export type ExpandQueryDataloader<T> = T extends object
   ? T extends Scalar
     ? never
     : FilterQueryDataloader<T>
@@ -57,16 +59,18 @@ export type QueryDataloader<T> = T extends object
 
 export type FilterObjectDataloader<T> = {
   -readonly [K in EntityKey<T>]?:
-    | QueryDataloader<ExpandProperty<T[K]>>
+    | ExpandQueryDataloader<ExpandProperty<T[K]>>
     | FilterValueDataloader<ExpandProperty<T[K]>>
     | null;
 };
 
-export type Compute<T> = {
-  [K in keyof T]: T[K];
-} & {};
+export type ExpandObjectDataloader<T> = T extends object
+  ? T extends Scalar
+    ? never
+    : FilterObjectDataloader<T>
+  : never;
 
-export type ObjectQueryDataloader<T> = Compute<OperatorMapDataloader<T> & FilterObjectDataloader<T>>;
+export type ObjectQueryDataloader<T> = OperatorMapDataloader<T> & ExpandObjectDataloader<T>;
 
 // FilterQuery<T>
 export type FilterQueryDataloader<T extends object> =
@@ -360,6 +364,7 @@ function updateQueryFilter<K extends object, P extends string = never>(
       const curValue = (cur as Record<string, any[]>)[key]!;
       if (Array.isArray(value)) {
         // value.push(...curValue.reduce<any[]>((acc, cur) => acc.concat(cur), []));
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         value.push(...structuredClone(curValue));
       } else {
         updateQueryFilter([value], curValue);
@@ -465,6 +470,7 @@ export function getFindBatchLoadFn<Entity extends object>(
         const res = entities[many ? "filter" : "find"]((entity) => {
           return filterResult(entity, newFilter);
         });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         acc.push(...(Array.isArray(res) ? res : [res]));
         return acc;
       }, []);
@@ -493,6 +499,7 @@ export function getFindBatchLoadFn<Entity extends object>(
             if (!entityValue.getItems().some((entity) => filterResult(entity, value))) {
               return false;
             }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           } else if (!filterResult(entityValue as object, value)) {
             return false;
           }
@@ -514,6 +521,7 @@ export function optsMapToQueries<Entity extends object>(
         populate: options.populate === true ? ["*"] : Array.from(options.populate),
       }),
     } satisfies Pick<FindOptions<any, any>, "populate">;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const entities = await em.find(entityName, filter, findOptions);
     return [key, entities];
   });

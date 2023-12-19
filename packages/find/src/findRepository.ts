@@ -17,50 +17,50 @@ export interface IFindDataloaderEntityRepository<Entity extends object, D extend
   extends EntityRepository<Entity> {
   readonly dataloader: D;
 
-  find<Hint extends string = never, Fields extends string = never>(
+  find<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQuery<Entity>,
-    options?: { dataloader: false } & FindOptions<Entity, Hint, Fields>,
-  ): Promise<Array<Loaded<Entity, Hint, Fields>>>;
-  find<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: false } & FindOptions<Entity, Hint, Fields, Excludes>,
+  ): Promise<Array<Loaded<Entity, Hint, Fields, Excludes>>>;
+  find<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQueryDataloader<Entity>,
-    options?: { dataloader: boolean } & Pick<FindOptions<Entity, Hint, Fields>, "populate">,
-  ): Promise<Array<Loaded<Entity, Hint, Fields>>>;
-  find<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: boolean } & Pick<FindOptions<Entity, Hint, Fields, Excludes>, "populate">,
+  ): Promise<Array<Loaded<Entity, Hint, Fields, Excludes>>>;
+  find<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: D extends true ? FilterQueryDataloader<Entity> : FilterQueryDataloader<Entity> | FilterQuery<Entity>,
     options?: { dataloader?: undefined } & (D extends true
-      ? Pick<FindOptions<Entity, Hint, Fields>, "populate">
-      : FindOptions<Entity, Hint, Fields>),
-  ): Promise<Array<Loaded<Entity, Hint, Fields>>>;
+      ? Pick<FindOptions<Entity, Hint, Fields, Excludes>, "populate">
+      : FindOptions<Entity, Hint, Fields, Excludes>),
+  ): Promise<Array<Loaded<Entity, Hint, Fields, Excludes>>>;
 
-  findOne<Hint extends string = never, Fields extends string = never>(
+  findOne<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQuery<Entity>,
-    options?: { dataloader: false } & FindOneOptions<Entity, Hint, Fields>,
-  ): Promise<Loaded<Entity, Hint, Fields> | null>;
-  findOne<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: false } & FindOneOptions<Entity, Hint, Fields, Excludes>,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
+  findOne<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQueryDataloader<Entity>,
-    options?: { dataloader: boolean } & Pick<FindOneOptions<Entity, Hint, Fields>, "populate">,
-  ): Promise<Loaded<Entity, Hint, Fields> | null>;
-  findOne<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: boolean } & Pick<FindOneOptions<Entity, Hint, Fields, Excludes>, "populate">,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
+  findOne<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: D extends true ? FilterQueryDataloader<Entity> : FilterQueryDataloader<Entity> | FilterQuery<Entity>,
     options?: { dataloader?: undefined } & (D extends true
-      ? Pick<FindOneOptions<Entity, Hint, Fields>, "populate">
-      : FindOneOptions<Entity, Hint, Fields>),
-  ): Promise<Loaded<Entity, Hint, Fields> | null>;
+      ? Pick<FindOneOptions<Entity, Hint, Fields, Excludes>, "populate">
+      : FindOneOptions<Entity, Hint, Fields, Excludes>),
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null>;
 
-  findOneOrFail<Hint extends string = never, Fields extends string = never>(
+  findOneOrFail<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQuery<Entity>,
-    options?: { dataloader: false } & FindOneOrFailOptions<Entity, Hint, Fields>,
-  ): Promise<Loaded<Entity, Hint, Fields>>;
-  findOneOrFail<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: false } & FindOneOrFailOptions<Entity, Hint, Fields, Excludes>,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
+  findOneOrFail<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: FilterQueryDataloader<Entity>,
-    options?: { dataloader: boolean } & Pick<FindOneOrFailOptions<Entity, Hint, Fields>, "populate">,
-  ): Promise<Loaded<Entity, Hint, Fields>>;
-  findOneOrFail<Hint extends string = never, Fields extends string = never>(
+    options?: { dataloader: boolean } & Pick<FindOneOrFailOptions<Entity, Hint, Fields, Excludes>, "populate">,
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
+  findOneOrFail<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
     where: D extends true ? FilterQueryDataloader<Entity> : FilterQueryDataloader<Entity> | FilterQuery<Entity>,
     options?: { dataloader?: undefined } & (D extends true
-      ? Pick<FindOneOrFailOptions<Entity, Hint, Fields>, "populate">
-      : FindOneOrFailOptions<Entity, Hint, Fields>),
-  ): Promise<Loaded<Entity, Hint, Fields>>;
+      ? Pick<FindOneOrFailOptions<Entity, Hint, Fields, Excludes>, "populate">
+      : FindOneOrFailOptions<Entity, Hint, Fields, Excludes>),
+  ): Promise<Loaded<Entity, Hint, Fields, Excludes>>;
 }
 
 export type FindDataloaderEntityRepositoryCtor<Entity extends object, D extends boolean> = new (
@@ -78,13 +78,13 @@ export function getFindDataloaderEntityRepository<Entity extends object, D exten
     readonly dataloader = defaultEnabled;
     private readonly findLoader = new DataLoader(getFindBatchLoadFn(this.em, this.entityName));
 
-    async find<Hint extends string = never, Fields extends string = never>(
+    async find<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
       where: FilterQueryDataloader<Entity> | FilterQuery<Entity>,
       options?: { dataloader?: boolean } & (
-        | Pick<FindOptions<Entity, Hint, Fields>, "populate">
-        | FindOptions<Entity, Hint, Fields>
+        | Pick<FindOptions<Entity, Hint, Fields, Excludes>, "populate">
+        | FindOptions<Entity, Hint, Fields, Excludes>
       ),
-    ): Promise<Array<Loaded<Entity, Hint, Fields>>> {
+    ): Promise<Array<Loaded<Entity, Hint, Fields, Excludes>>> {
       const entityName = Utils.className(this.entityName);
       const res = await (options?.dataloader ?? this.dataloader
         ? this.findLoader.load({
@@ -94,17 +94,17 @@ export function getFindDataloaderEntityRepository<Entity extends object, D exten
             options,
             many: true,
           })
-        : this.em.find<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options));
-      return res as Array<Loaded<Entity, Hint, Fields>>;
+        : this.em.find<Entity, Hint, Fields, Excludes>(this.entityName, where as FilterQuery<Entity>, options));
+      return res as Array<Loaded<Entity, Hint, Fields, Excludes>>;
     }
 
-    async findOne<Hint extends string = never, Fields extends string = never>(
+    async findOne<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
       where: FilterQueryDataloader<Entity> | FilterQuery<Entity>,
       options?: { dataloader?: boolean } & (
-        | Pick<FindOneOptions<Entity, Hint, Fields>, "populate">
-        | FindOneOptions<Entity, Hint, Fields>
+        | Pick<FindOneOptions<Entity, Hint, Fields, Excludes>, "populate">
+        | FindOneOptions<Entity, Hint, Fields, Excludes>
       ),
-    ): Promise<Loaded<Entity, Hint, Fields> | null> {
+    ): Promise<Loaded<Entity, Hint, Fields, Excludes> | null> {
       const entityName = Utils.className(this.entityName);
       const res = await (options?.dataloader ?? this.dataloader
         ? this.findLoader.load({
@@ -114,17 +114,17 @@ export function getFindDataloaderEntityRepository<Entity extends object, D exten
             options,
             many: false,
           })
-        : this.em.findOne<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options));
-      return res as Loaded<Entity, Hint, Fields> | null;
+        : this.em.findOne<Entity, Hint, Fields, Excludes>(this.entityName, where as FilterQuery<Entity>, options));
+      return res as Loaded<Entity, Hint, Fields, Excludes> | null;
     }
 
-    async findOneOrFail<Hint extends string = never, Fields extends string = never>(
+    async findOneOrFail<Hint extends string = never, Fields extends string = "*", Excludes extends string = never>(
       where: FilterQueryDataloader<Entity> | FilterQuery<Entity>,
       options?: { dataloader?: boolean } & (
-        | Pick<FindOneOrFailOptions<Entity, Hint, Fields>, "populate">
-        | FindOneOrFailOptions<Entity, Hint, Fields>
+        | Pick<FindOneOrFailOptions<Entity, Hint, Fields, Excludes>, "populate">
+        | FindOneOrFailOptions<Entity, Hint, Fields, Excludes>
       ),
-    ): Promise<Loaded<Entity, Hint, Fields>> {
+    ): Promise<Loaded<Entity, Hint, Fields, Excludes>> {
       const entityName = Utils.className(this.entityName);
       const res = await (options?.dataloader ?? this.dataloader
         ? this.findLoader.load({
@@ -134,11 +134,15 @@ export function getFindDataloaderEntityRepository<Entity extends object, D exten
             options,
             many: false,
           })
-        : this.em.findOneOrFail<Entity, Hint, Fields>(this.entityName, where as FilterQuery<Entity>, options));
+        : this.em.findOneOrFail<Entity, Hint, Fields, Excludes>(
+            this.entityName,
+            where as FilterQuery<Entity>,
+            options,
+          ));
       if (res == null) {
         throw new Error("Cannot find result");
       }
-      return res as Loaded<Entity, Hint, Fields>;
+      return res as Loaded<Entity, Hint, Fields, Excludes>;
     }
   }
 
