@@ -54,7 +54,7 @@
     "tslib": "2.6.2"
   },
   "devDependencies": {
-    "@mikro-orm/core": "6.0.0-dev.261",
-    "@mikro-orm/sqlite": "6.0.0-dev.261"
+    "@mikro-orm/core": "6.0.0-dev.283",
+    "@mikro-orm/sqlite": "6.0.0-dev.283"
   }
 }
