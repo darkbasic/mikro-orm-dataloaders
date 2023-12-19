@@ -1,6 +1,6 @@
 {
   "name": "mikro-orm-find-dataloader",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Additional dataloaders for the MikroORM EntityManager find/findOne/etc methods.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -1,5 +1,11 @@
 # mikro-orm-find-dataloader
 
+## 2.2.0
+
+### Minor Changes
+
+- [#17](https://github.com/darkbasic/mikro-orm-dataloaders/pull/17) [`bbe8222`](https://github.com/darkbasic/mikro-orm-dataloaders/commit/bbe82228ba0b855ea9cea65106065919511f68ed) Thanks [@darkbasic](https://github.com/darkbasic)! - fix: support excludes syntax from latest v6 alpha
+
 ## 2.1.1
 
 ### Patch Changes
