@@ -16,12 +16,12 @@
     "test": "yarn run build"
   },
   "dependencies": {
-    "@graphql-tools/executor-http": "^1.0.5",
-    "@mikro-orm/core": "6.0.0-dev.283",
-    "@mikro-orm/sqlite": "6.0.0-dev.283",
+    "@graphql-tools/executor-http": "^1.0.7",
+    "@mikro-orm/core": "6.0.7",
+    "@mikro-orm/sqlite": "6.0.7",
     "graphql": "16.8.1",
     "graphql-tag": "^2.12.6",
-    "graphql-yoga": "5.0.2",
+    "graphql-yoga": "5.1.1",
     "tslib": "2.6.2"
   }
 }
